@@ -1,0 +1,79 @@
+# # doc.accounts = ""
+# credit_account = frappe.db.get_value("Bank Account",doc.bank_account_from,"account")
+# credit_entry = {
+#     "account": credit_account,
+#     "credit_in_account_currency": doc.amount,
+# }
+
+
+# # if not frappe.db.exists("Journal Entry Account", {"parent": doc.name, "account": credit_account}):
+# #     doc.append("accounts", credit_entry)
+
+# debit_account = frappe.db.get_value("Bank Account",doc.bank_account_to,"account")
+# debit_entry = {
+#     "account": debit_account,
+#     "debit_in_account_currency": doc.amount,
+# }
+    
+# # if not frappe.db.exists("Journal Entry Account", {"parent": doc.name, "account": debit_account}):
+# #     doc.append("accounts", debit_entry)
+
+# if not doc.docstatus.is_submitted():
+#     doc.append("accounts", debit_entry) 
+#     doc.append("accounts", credit_entry)
+# if doc.docstatus.is_submitted():   
+#     journal_entry = frappe.new_doc("Journal Entry")
+#     journal_entry.posting_date = frappe.utils.nowdate()
+#     journal_entry.company = doc.company
+#     for item in doc.accounts:
+#         journal_entry.append("accounts", {
+#             'account': item.account,
+#             'debit_in_account_currency': item.debit_in_account_currency,
+#             'credit_in_account_currency': item.credit_in_account_currency
+#         })
+#     # journal_entry.accounts = doc.accounts
+#     journal_entry.cheque_no = doc.name
+#     journal_entry.cheque_date = frappe.utils.nowdate()
+#     journal_entry.user_remark = "Auto created Entry for Bank Tranfer"
+#     journal_entry.save()
+#     journal_entry.submit()
+#     frappe.msgprint("Journal Entry Created")
+
+
+# New Code
+credit_account = frappe.db.get_value("Bank Account",doc.bank_account_from,"account")
+credit_entry = {
+    "account": credit_account,
+    "credit_in_account_currency": doc.amount,
+}
+
+
+if not frappe.db.exists("Journal Entry Account", {"parent": doc.name, "account": credit_account, "credit_in_account_currency": doc.amount}):
+    doc.append("accounts", credit_entry)
+
+debit_account = frappe.db.get_value("Bank Account",doc.bank_account_to,"account")
+debit_entry = {
+    "account": debit_account,
+    "debit_in_account_currency": doc.amount,
+}
+
+if not frappe.db.exists("Journal Entry Account", {"parent": doc.name, "account": debit_account, "debit_in_account_currency": doc.amount}):
+    doc.append("accounts", debit_entry)
+    
+if doc.docstatus.is_submitted():   
+    journal_entry = frappe.new_doc("Journal Entry")
+    journal_entry.posting_date = frappe.utils.nowdate()
+    journal_entry.company = doc.company
+    for item in doc.accounts:
+        journal_entry.append("accounts", {
+            'account': item.account,
+            'debit_in_account_currency': item.debit_in_account_currency,
+            'credit_in_account_currency': item.credit_in_account_currency
+        })
+    # journal_entry.accounts = doc.accounts
+    journal_entry.cheque_no = doc.name
+    journal_entry.cheque_date = frappe.utils.nowdate()
+    journal_entry.user_remark = "Auto created Entry for Bank Tranfer"
+    journal_entry.save()
+    journal_entry.submit()
+    frappe.msgprint("Journal Entry Created")
